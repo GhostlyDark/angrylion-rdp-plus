@@ -99,6 +99,11 @@ add_library(alp-core STATIC ${SOURCES_CORE} ${PATH_VERSION})
 # output library
 set(PATH_OUTPUT "${PATH_SRC}/output")
 
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+find_package(Qt5 COMPONENTS Gui Widgets Core REQUIRED)
+
 file(GLOB SOURCES_OUTPUT "${PATH_OUTPUT}/*.c" "${PATH_OUTPUT}/*.cpp")
 
 add_library(alp-output STATIC ${SOURCES_OUTPUT})
@@ -140,14 +145,14 @@ if(BUILD_MUPEN64PLUS)
     
     set(PATH_PLUGIN_M64P "${PATH_SRC}/plugin/mupen64plus")
     
-    file(GLOB SOURCES_PLUGIN_M64P "${PATH_PLUGIN_M64P}/*.c")
+    file(GLOB SOURCES_PLUGIN_M64P "${PATH_PLUGIN_M64P}/*.c" "${PATH_PLUGIN_M64P}/*.cpp" "${PATH_PLUGIN_M64P}/UserInterface/MainDialog.cpp" "${PATH_PLUGIN_M64P}/UserInterface/MainDialog.ui")
     add_library(${NAME_PLUGIN_M64P} SHARED ${SOURCES_PLUGIN_M64P})
     
     if(NOT ANDROID)
         set_target_properties(${NAME_PLUGIN_M64P} PROPERTIES PREFIX "")
     endif()
-    
-    target_link_libraries(${NAME_PLUGIN_M64P} alp-core alp-output ${CMAKE_THREAD_LIBS_INIT} ${OPENGL_LIBRARIES})
+
+    target_link_libraries(${NAME_PLUGIN_M64P} alp-core alp-output Qt5::Gui Qt5::Widgets ${CMAKE_THREAD_LIBS_INIT} ${OPENGL_LIBRARIES})
     
     if(UNIX AND NOT APPLE AND NOT ANDROID)
         install(TARGETS ${NAME_PLUGIN_M64P}

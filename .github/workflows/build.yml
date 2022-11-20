@@ -37,7 +37,7 @@ jobs:
         run: |
           if [[ "${{ matrix.platform }}" == "x86" ]]; then sudo dpkg --add-architecture i386; fi
           sudo apt-get update
-          sudo apt-get -y install cmake libgl1-mesa-dev libopengl-dev
+          sudo apt-get -y install cmake libgl1-mesa-dev libopengl-dev qtbase5-dev
           if [[ "${{ matrix.platform }}" == "x86" ]]; then
             sudo apt-get --reinstall -y install gcc-multilib g++-multilib libc6 libc6-dev-i386 libgl1-mesa-glx:i386 libopengl0:i386
             LINK="sudo ln -s -T"

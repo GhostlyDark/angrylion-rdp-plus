@@ -1,5 +1,9 @@
 #pragma once
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // endianness
 #define LSB_FIRST 1 
 #ifdef LSB_FIRST
@@ -35,3 +39,7 @@
 
 // misc
 #define UNUSED(x) (void)(x)
+
+#ifdef __cplusplus
+}
+#endif

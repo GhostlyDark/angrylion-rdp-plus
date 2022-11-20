@@ -1,5 +1,9 @@
 #pragma once
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "core/n64video.h"
 
 #include <stdint.h>
@@ -10,3 +14,7 @@ void screen_adjust(int32_t width_out, int32_t height_out, int32_t* width, int32_
 void screen_update(void);
 void screen_toggle_fullscreen(void);
 void screen_close(void);
+
+#ifdef __cplusplus
+}
+#endif

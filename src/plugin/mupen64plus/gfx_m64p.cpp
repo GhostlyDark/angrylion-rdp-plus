@@ -23,26 +23,12 @@
 
 #define M64P_PLUGIN_PROTOTYPES 1
 
-#define KEY_FULLSCREEN "Fullscreen"
-#define KEY_SCREEN_WIDTH "ScreenWidth"
-#define KEY_SCREEN_HEIGHT "ScreenHeight"
-#define KEY_PARALLEL "Parallel"
-#define KEY_NUM_WORKERS "NumWorkers"
-#define KEY_BUSY_LOOP "BusyLoop"
-
-#define KEY_VI_MODE "ViMode"
-#define KEY_VI_INTERP "ViInterpolation"
-#define KEY_VI_WIDESCREEN "ViWidescreen"
-#define KEY_VI_HIDE_OVERSCAN "ViHideOverscan"
-#define KEY_VI_INTEGER_SCALING "ViIntegerScaling"
-
-#define KEY_DP_COMPAT "DpCompat"
-
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 
 #include "gfx_m64p.h"
+#include "UserInterface/MainDialog.hpp"
 
 #include "api/m64p_types.h"
 #include "api/m64p_config.h"
@@ -54,13 +40,14 @@
 #include "output/screen.h"
 #include "output/vdac.h"
 
-static ptr_ConfigOpenSection      ConfigOpenSection = NULL;
-static ptr_ConfigSaveSection      ConfigSaveSection = NULL;
-static ptr_ConfigSetDefaultInt    ConfigSetDefaultInt = NULL;
-static ptr_ConfigSetDefaultBool   ConfigSetDefaultBool = NULL;
-static ptr_ConfigGetParamInt      ConfigGetParamInt = NULL;
-static ptr_ConfigGetParamBool     ConfigGetParamBool = NULL;
-static ptr_PluginGetVersion       CoreGetVersion = NULL;
+ptr_ConfigOpenSection      ConfigOpenSection = NULL;
+ptr_ConfigSaveSection      ConfigSaveSection = NULL;
+ptr_ConfigSetDefaultInt    ConfigSetDefaultInt = NULL;
+ptr_ConfigSetDefaultBool   ConfigSetDefaultBool = NULL;
+ptr_ConfigGetParamInt      ConfigGetParamInt = NULL;
+ptr_ConfigGetParamBool     ConfigGetParamBool = NULL;
+ptr_ConfigSetParameter     ConfigSetParameter = NULL;
+ptr_PluginGetVersion       CoreGetVersion = NULL;
 
 static bool warn_hle;
 static bool plugin_initialized;
@@ -72,8 +59,7 @@ m64p_dynlib_handle CoreLibHandle;
 GFX_INFO gfx;
 void (*render_callback)(int);
 
-static m64p_handle configVideoGeneral = NULL;
-static m64p_handle configVideoAngrylionPlus = NULL;
+m64p_handle configVideoAngrylionPlus = NULL;
 
 #define PLUGIN_VERSION              0x010600
 #define VIDEO_PLUGIN_API_VERSION    0x020500
@@ -81,6 +67,10 @@ static m64p_handle configVideoAngrylionPlus = NULL;
 extern int32_t win_width;
 extern int32_t win_height;
 extern int32_t win_fullscreen;
+
+int32_t vi_mode;
+int32_t vi_interp;
+int32_t dp_compat_profile;
 
 EXPORT m64p_error CALL PluginStartup(m64p_dynlib_handle _CoreLibHandle, void *Context,
                                      void (*DebugCallback)(void *, int, const char *))
@@ -101,13 +91,13 @@ EXPORT m64p_error CALL PluginStartup(m64p_dynlib_handle _CoreLibHandle, void *Co
     ConfigSetDefaultBool = (ptr_ConfigSetDefaultBool)DLSYM(CoreLibHandle, "ConfigSetDefaultBool");
     ConfigGetParamInt = (ptr_ConfigGetParamInt)DLSYM(CoreLibHandle, "ConfigGetParamInt");
     ConfigGetParamBool = (ptr_ConfigGetParamBool)DLSYM(CoreLibHandle, "ConfigGetParamBool");
+    ConfigSetParameter = (ptr_ConfigSetParameter)DLSYM(CoreLibHandle, "ConfigSetParameter");
 
-    ConfigOpenSection("Video-General", &configVideoGeneral);
     ConfigOpenSection("Video-AngrylionPlus", &configVideoAngrylionPlus);
 
-    ConfigSetDefaultBool(configVideoGeneral, KEY_FULLSCREEN, 0, "Use fullscreen mode if True, or windowed mode if False");
-    ConfigSetDefaultInt(configVideoGeneral, KEY_SCREEN_WIDTH, 640, "Width of output window or fullscreen width");
-    ConfigSetDefaultInt(configVideoGeneral, KEY_SCREEN_HEIGHT, 480, "Height of output window or fullscreen height");
+    ConfigSetDefaultBool(configVideoAngrylionPlus, KEY_FULLSCREEN, 0, "Use fullscreen mode if True, or windowed mode if False");
+    ConfigSetDefaultInt(configVideoAngrylionPlus, KEY_SCREEN_WIDTH, 640, "Width of output window or fullscreen width");
+    ConfigSetDefaultInt(configVideoAngrylionPlus, KEY_SCREEN_HEIGHT, 480, "Height of output window or fullscreen height");
 
     CoreGetVersion = (ptr_PluginGetVersion)DLSYM(CoreLibHandle, "PluginGetVersion");
 
@@ -123,7 +113,6 @@ EXPORT m64p_error CALL PluginStartup(m64p_dynlib_handle _CoreLibHandle, void *Co
     ConfigSetDefaultBool(configVideoAngrylionPlus, KEY_VI_INTEGER_SCALING, config.vi.integer_scaling, "Display upscaled pixels as groups of 1x1, 2x2, 3x3, etc. if True");
     ConfigSetDefaultInt(configVideoAngrylionPlus, KEY_DP_COMPAT, config.dp.compat, "Compatibility mode (0=Fast 1=Moderate 2=Slow");
 
-    ConfigSaveSection("Video-General");
     ConfigSaveSection("Video-AngrylionPlus");
 
     plugin_initialized = true;
@@ -170,6 +159,22 @@ EXPORT m64p_error CALL PluginGetVersion(m64p_plugin_type *PluginType, int *Plugi
     return M64ERR_SUCCESS;
 }
 
+extern "C"
+{
+    EXPORT m64p_error CALL PluginConfig(void)
+    {
+        if (!plugin_initialized)
+        {
+            return M64ERR_NOT_INIT;
+        }
+
+        UserInterface::MainDialog dialog(nullptr);
+        dialog.exec();
+
+        return M64ERR_SUCCESS;
+    }
+}
+
 EXPORT int CALL InitiateGFX (GFX_INFO Gfx_Info)
 {
     gfx = Gfx_Info;
@@ -198,20 +203,20 @@ EXPORT void CALL ProcessRDPList(void)
 
 EXPORT int CALL RomOpen (void)
 {
-    win_fullscreen = ConfigGetParamBool(configVideoGeneral, KEY_FULLSCREEN);
-    win_width = ConfigGetParamInt(configVideoGeneral, KEY_SCREEN_WIDTH);
-    win_height = ConfigGetParamInt(configVideoGeneral, KEY_SCREEN_HEIGHT);
+    win_fullscreen = ConfigGetParamBool(configVideoAngrylionPlus, KEY_FULLSCREEN);
+    win_width = ConfigGetParamInt(configVideoAngrylionPlus, KEY_SCREEN_WIDTH);
+    win_height = ConfigGetParamInt(configVideoAngrylionPlus, KEY_SCREEN_HEIGHT);
 
     config.parallel = ConfigGetParamBool(configVideoAngrylionPlus, KEY_PARALLEL);
     config.num_workers = ConfigGetParamInt(configVideoAngrylionPlus, KEY_NUM_WORKERS);
     config.busyloop = ConfigGetParamBool(configVideoAngrylionPlus, KEY_BUSY_LOOP);
-    config.vi.mode = ConfigGetParamInt(configVideoAngrylionPlus, KEY_VI_MODE);
-    config.vi.interp = ConfigGetParamInt(configVideoAngrylionPlus, KEY_VI_INTERP);
+    vi_mode = ConfigGetParamInt(configVideoAngrylionPlus, KEY_VI_MODE);
+    vi_interp = ConfigGetParamInt(configVideoAngrylionPlus, KEY_VI_INTERP);
     config.vi.widescreen = ConfigGetParamBool(configVideoAngrylionPlus, KEY_VI_WIDESCREEN);
     config.vi.hide_overscan = ConfigGetParamBool(configVideoAngrylionPlus, KEY_VI_HIDE_OVERSCAN);
     config.vi.integer_scaling = ConfigGetParamBool(configVideoAngrylionPlus, KEY_VI_INTEGER_SCALING);
 
-    config.dp.compat = ConfigGetParamInt(configVideoAngrylionPlus, KEY_DP_COMPAT);
+    dp_compat_profile = ConfigGetParamInt(configVideoAngrylionPlus, KEY_DP_COMPAT);
 
     config.gfx.rdram = gfx.RDRAM;
 
@@ -276,7 +281,7 @@ EXPORT void CALL ReadScreen2(void *dest, int *width, int *height, int front)
     UNUSED(front);
 
     struct n64video_frame_buffer fb = { 0 };
-    fb.pixels = dest;
+    fb.pixels = (n64video_pixel*)dest;
     vdac_read(&fb, false);
 
     *width = fb.width;
