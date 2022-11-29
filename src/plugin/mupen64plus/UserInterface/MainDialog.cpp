@@ -44,7 +44,7 @@ MainDialog::MainDialog(QWidget* parent) : QDialog(parent, Qt::WindowSystemMenuHi
     // set DpCompat combobox
     this->dpCompatComboBox->setCurrentIndex(ConfigGetParamInt(configVideoAngrylionPlus, KEY_DP_COMPAT));
 
-    this->fullscreenCheckBox->setChecked(ConfigGetParamBool(configVideoAngrylionPlus, KEY_FULLSCREEN));
+//  this->fullscreenCheckBox->setChecked(ConfigGetParamBool(configVideoAngrylionPlus, KEY_FULLSCREEN));
 
     this->parallelCheckBox->setChecked(ConfigGetParamBool(configVideoAngrylionPlus, KEY_PARALLEL));
     this->busyLoopCheckBox->setChecked(ConfigGetParamBool(configVideoAngrylionPlus, KEY_BUSY_LOOP));
@@ -91,7 +91,7 @@ void MainDialog::on_buttonBox_clicked(QAbstractButton* button)
     ConfigSetParameter(configVideoAngrylionPlus, KEY_DP_COMPAT, M64TYPE_INT, &dpCompatValue);
 
     // checkboxes
-    int fullscreenValue = this->fullscreenCheckBox->isChecked() ? 1 : 0; //(ConfigGetParamBool(configVideoAngrylionPlus, KEY_FULLSCREEN));
+//  int fullscreenValue = this->fullscreenCheckBox->isChecked() ? 1 : 0; //(ConfigGetParamBool(configVideoAngrylionPlus, KEY_FULLSCREEN));
 
     int parallelValue = this->parallelCheckBox->isChecked() ? 1 : 0; //(ConfigGetParamBool(configVideoAngrylionPlus, KEY_PARALLEL));
     int busyLoopValue = this->busyLoopCheckBox->isChecked() ? 1 : 0; //(ConfigGetParamBool(configVideoAngrylionPlus, KEY_BUSY_LOOP));
@@ -100,7 +100,7 @@ void MainDialog::on_buttonBox_clicked(QAbstractButton* button)
     int viHideOverscanValue = this->viHideOverscanCheckBox->isChecked() ? 1 : 0; //(ConfigGetParamBool(configVideoAngrylionPlus, KEY_VI_HIDE_OVERSCAN));
     int viIntegerScalingValue = this->viIntegerScalingCheckBox->isChecked() ? 1 : 0; //(ConfigGetParamBool(configVideoAngrylionPlus, KEY_VI_INTEGER_SCALING));
 
-    ConfigSetParameter(configVideoAngrylionPlus, KEY_FULLSCREEN, M64TYPE_BOOL, &fullscreenValue);
+//  ConfigSetParameter(configVideoAngrylionPlus, KEY_FULLSCREEN, M64TYPE_BOOL, &fullscreenValue);
 
     ConfigSetParameter(configVideoAngrylionPlus, KEY_PARALLEL, M64TYPE_BOOL, &parallelValue);
     ConfigSetParameter(configVideoAngrylionPlus, KEY_BUSY_LOOP, M64TYPE_BOOL, &busyLoopValue);

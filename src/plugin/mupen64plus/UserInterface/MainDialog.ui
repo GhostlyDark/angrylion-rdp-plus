@@ -209,9 +209,9 @@
               <number>0</number>
              </property>
              <item>
-              <widget class="QCheckBox" name="viIntegerScalingCheckBox">
+              <widget class="QCheckBox" name="viWidescreenCheckBox">
                <property name="text">
-                <string>Integer pixel scaling</string>
+                <string>16:9 widescreen</string>
                </property>
               </widget>
              </item>
@@ -219,13 +219,6 @@
               <widget class="QCheckBox" name="busyLoopCheckBox">
                <property name="text">
                 <string>Enable busyloop</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QCheckBox" name="viHideOverscanCheckBox">
-               <property name="text">
-                <string>Hide overscan</string>
                </property>
               </widget>
              </item>
@@ -237,27 +230,34 @@
               <number>0</number>
              </property>
              <item>
-              <widget class="QCheckBox" name="viWidescreenCheckBox">
+              <widget class="QCheckBox" name="viHideOverscanCheckBox">
                <property name="text">
-                <string>16:9 widescreen</string>
+                <string>Hide overscan</string>
                </property>
               </widget>
              </item>
              <item>
-              <widget class="QCheckBox" name="fullscreenCheckBox">
+              <widget class="QCheckBox" name="viIntegerScalingCheckBox">
                <property name="text">
-                <string>Use Fullscreen</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QCheckBox" name="parallelCheckBox">
-               <property name="text">
-                <string>Multithreaded rendering</string>
+                <string>Integer pixel scaling</string>
                </property>
               </widget>
              </item>
             </layout>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QVBoxLayout" name="verticalLayout_3">
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
+           <item>
+            <widget class="QCheckBox" name="parallelCheckBox">
+             <property name="text">
+              <string>Multithreaded rendering</string>
+             </property>
+            </widget>
            </item>
           </layout>
          </item>
